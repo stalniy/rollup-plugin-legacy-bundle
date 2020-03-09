@@ -46,7 +46,7 @@ function resolveFromBundle(
   };
 }
 
-type LegacyPluginOptions = OutputOptions & {
+type LegacyPluginOptions = Omit<OutputOptions, 'plugins'> & {
   polyfills?: BundleResolverOptions['polyfills'],
   plugins?: Plugin[]
 };
