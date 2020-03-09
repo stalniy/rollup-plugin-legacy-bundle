@@ -1,2 +1,2 @@
 export * from './generateAssets';
-export { default as legacy } from './plugin';
+export { default as legacyBundle } from './plugin';
