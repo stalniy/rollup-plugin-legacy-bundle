@@ -37,10 +37,13 @@ export default ({
           source: chunk.source,
         });
       } else if (chunk.type === 'chunk') {
+        const code = chunk.isEntry
+          ? `(function(){if(window.__isAppExecuted__)return;${chunk.code}})();`
+          : chunk.code;
         this.emitFile({
           type: 'asset',
           fileName: `${dir}/${chunk.fileName}`,
-          source: chunk.code,
+          source: code,
         });
 
         if (chunk.map) {

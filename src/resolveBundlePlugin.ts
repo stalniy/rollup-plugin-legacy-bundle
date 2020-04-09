@@ -39,10 +39,7 @@ export function resolveFromBundle(
 
       return {
         // TODO: use magic-string or similar to properly handle sourcemaps
-        code: `(function() {
-          if (window.__isAppExecuted__) return;
-          ${importPolyfills(options.polyfills) + chunk.code}
-        })()`,
+        code: importPolyfills(options.polyfills) + chunk.code,
         map: chunk.map,
       };
     },
