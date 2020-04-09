@@ -3,10 +3,16 @@ import { OutputAsset, OutputChunk } from 'rollup';
 type SimpleObject = Record<string, string | number>;
 type MakeAttributes = (file: OutputAsset | OutputChunk) => string;
 type Files = Array<OutputAsset | OutputChunk> | undefined;
-type AssetsOptions = {
-  publicPath?: string,
+
+interface AssetsOptions {
+  publicPath?: string
   attrs?: SimpleObject | null
-};
+}
+
+interface JSAssetsOptions extends AssetsOptions {
+  includeSafariFix?: true
+}
+
 
 function htmlAttributes(attributes: AssetsOptions['attrs']): string {
   if (!attributes) {
@@ -27,12 +33,20 @@ export function generateTags(files: Files, tagName: string, makeAttrs: MakeAttri
     .join('');
 }
 
-export function generateJs(files: Files, { publicPath = '', attrs }: AssetsOptions = {}): string {
-  const { type, ...defaultAttrs } = attrs || {} as SimpleObject;
-  return generateTags(files, 'script', ({ fileName }) => {
-    const typeAttr = fileName.startsWith('legacy/') ? 'nomodule' : 'type="module"';
+export function safariFixScript() {
+  // eslint-disable-next-line max-len
+  return '<script>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()},!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>';
+}
+
+export function generateJs(files: Files, options: JSAssetsOptions = {}): string {
+  const publicPath = options.publicPath || '';
+  const { type, ...defaultAttrs } = options.attrs || {} as SimpleObject;
+  const scripts = generateTags(files, 'script', ({ fileName }) => {
+    const typeAttr = fileName.startsWith('legacy/') ? 'nomodule defer' : 'type="module"';
     return `${typeAttr} src="${publicPath}${fileName}"${htmlAttributes(defaultAttrs)}`;
   });
+
+  return (options.includeSafariFix ? safariFixScript() : '') + scripts;
 }
 
 export function generateCss(files: Files, { publicPath = '', attrs }: AssetsOptions = {}): string {
